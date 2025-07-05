@@ -29,7 +29,7 @@ export default function SearchAndFilter({
           placeholder="Search articles..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full px-6 py-4 pl-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+          className="w-full px-6 py-4 pl-12 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
         />
         <svg
           className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -53,7 +53,7 @@ export default function SearchAndFilter({
           className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
             selectedTag === ""
               ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
           All
@@ -65,7 +65,7 @@ export default function SearchAndFilter({
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
               selectedTag === tag
                 ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
             {tag}

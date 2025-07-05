@@ -22,7 +22,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         disabled={currentPage === 1}
         className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
           currentPage === 1
-            ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
             : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg"
         }`}
       >
@@ -36,7 +36,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
           className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
             currentPage === page
               ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
           {page}
@@ -48,7 +48,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         disabled={currentPage === totalPages}
         className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
           currentPage === totalPages
-            ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
             : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg"
         }`}
       >

@@ -16,11 +16,11 @@ export default function BlogCard({ blog, index }: BlogCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       whileHover={{ y: -5 }}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700"
+      className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200"
     >
       <div className="p-8">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-gray-500">
             {new Date(blog.publishedAt).toLocaleDateString()}
           </span>
           {blog.tags && (
@@ -29,15 +29,15 @@ export default function BlogCard({ blog, index }: BlogCardProps) {
             </span>
           )}
         </div>
-        <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 line-clamp-2">
+        <h3 className="text-2xl font-semibold text-gray-900 mb-4 line-clamp-2">
           {blog.title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-300 mb-6 line-clamp-3 text-lg leading-relaxed">
+        <p className="text-gray-600 mb-6 line-clamp-3 text-lg leading-relaxed">
           {blog.excerpt || blog.title}
         </p>
         <Link
           href={`/blogs/${blog.slug}`}
-          className="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-purple-600 dark:hover:text-purple-400 font-medium text-lg"
+          className="inline-flex items-center text-indigo-600 hover:text-purple-600 font-medium text-lg"
         >
           Read More →
         </Link>

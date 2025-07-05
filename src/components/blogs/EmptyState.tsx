@@ -15,10 +15,10 @@ export default function EmptyState({ searchTerm, selectedTag, onClearFilters }: 
       className="text-center py-20"
     >
       <div className="text-6xl mb-4">📝</div>
-      <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+      <h3 className="text-2xl font-semibold text-gray-900 mb-2">
         No articles found
       </h3>
-      <p className="text-gray-600 dark:text-gray-400 mb-6">
+      <p className="text-gray-600 mb-6">
         {searchTerm || selectedTag
           ? "Try adjusting your search or filter criteria"
           : "Check back soon for new content!"}
