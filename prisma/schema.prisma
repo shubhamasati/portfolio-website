@@ -31,22 +31,20 @@ model Profile {
   userId            String   @unique
   user              User     @relation(fields: [userId], references: [id])
   bio               String?
-  aboutMe           String?  // Detailed about me section
+  aboutMe           String?
   title             String?
   location          String?
-  website           String?
-  github            String?
-  linkedin          String?
-  twitter           String?
-  skills            String?  // Comma-separated skills
-  experience        String?  // JSON string for experience
-  education         String?  // JSON string for education
   avatar            String?  // URL to avatar image
-  availabilityStatus String? // "available", "open_to_work", "not_available", "disabled"
-  projects          Project[] // Relation to projects
-  socialMedia       SocialMedia[] // Relation to social media handles
+  availabilityStatus String? // "available", "open_to_work", "not_available", "freelance", "part_time", "contract", "disabled"
+  website           String?  // Personal website URL
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  // Relations
+  projects      Project[]
+  socialMedia   SocialMedia[]
+  experiences   Experience[]
+  educations    Education[]
 }
 
 model Blog {
@@ -74,6 +72,34 @@ model Blog {
   scheduledAt DateTime? // For scheduled publishing
   lastEditedAt DateTime? // Track last edit time
   showViews   Boolean  @default(true) // Control views visibility per blog
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  company     String
+  title       String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Education {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  school      String
+  degree      String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Project {

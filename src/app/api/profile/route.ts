@@ -26,6 +26,12 @@ export async function GET() {
             },
             socialMedia: {
               orderBy: { order: 'asc' }
+            },
+            experiences: {
+              orderBy: { order: 'asc' }
+            },
+            educations: {
+              orderBy: { order: 'asc' }
             }
           }
         } 
@@ -98,17 +104,10 @@ export async function PUT(request: NextRequest) {
       aboutMe,
       title,
       location,
-      website,
-      github,
-      linkedin,
-      twitter,
-      skills,
-      experience,
-      education,
       avatar,
       availabilityStatus,
+      website,
     } = body;
-    console.log("Profile PUT - Extracted availabilityStatus:", availabilityStatus);
 
     let profile;
     if (user.profile) {
@@ -120,15 +119,9 @@ export async function PUT(request: NextRequest) {
           aboutMe,
           title,
           location,
-          website,
-          github,
-          linkedin,
-          twitter,
-          skills,
-          experience,
-          education,
           avatar,
           availabilityStatus,
+          website,
         },
       });
     } else {
@@ -140,15 +133,9 @@ export async function PUT(request: NextRequest) {
           aboutMe,
           title,
           location,
-          website,
-          github,
-          linkedin,
-          twitter,
-          skills,
-          experience,
-          education,
           avatar,
           availabilityStatus,
+          website,
         },
       });
     }

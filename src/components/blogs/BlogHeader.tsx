@@ -20,7 +20,7 @@ export default function BlogHeader() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch("/api/profile");
+      const response = await fetch("/api/public/profile");
       if (response.ok) {
         const data = await response.json();
         setProfile(data);

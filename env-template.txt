@@ -1,0 +1,24 @@
+# Database
+DATABASE_URL="file:./dev.db"
+
+# NextAuth Configuration
+NEXTAUTH_SECRET="your-super-secret-key-here-change-this-in-production"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Admin credentials
+ADMIN_EMAIL=your-email@example.com
+ADMIN_PASSWORD=your-secure-password
+ADMIN_NAME=Your Name
+
+# Profile information
+PROFILE_BIO=Your bio here
+PROFILE_TITLE=Your title
+PROFILE_LOCATION=Your location
+PROFILE_WEBSITE=https://yourwebsite.com
+PROFILE_GITHUB=https://github.com/yourusername
+PROFILE_LINKEDIN=https://linkedin.com/in/yourusername
+PROFILE_TWITTER=https://twitter.com/yourusername
+
+# Optional: For production deployment
+# DATABASE_URL="postgresql://username:password@host:port/database"
+# NEXTAUTH_URL="https://yourdomain.com"

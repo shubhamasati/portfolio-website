@@ -107,7 +107,7 @@ export default function Home() {
   const fetchData = async () => {
     try {
       const [profileRes, blogsRes, skillDomainsRes] = await Promise.all([
-        fetch('/api/profile'),
+        fetch('/api/public/profile'),
         fetch('/api/blogs?featured=true&limit=3'),
         fetch('/api/skill-domains')
       ]);
