@@ -21,21 +21,18 @@ export async function POST() {
       throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required");
     }
 
-    // First, ensure database tables exist
-    console.log("📋 Ensuring database tables exist...");
-    const { execSync } = require('child_process');
-    
+    // Test database connection
+    console.log("🔌 Testing database connection...");
+    await prisma.$connect();
+    console.log("✅ Database connection successful");
+
+    // Check if tables exist by trying to query them
     try {
-      execSync('npx prisma db push', { 
-        stdio: 'pipe', 
-        encoding: 'utf8',
-        env: process.env 
-      });
-      console.log("✅ Database tables created successfully!");
-    } catch (migrationError) {
-      console.error("❌ Database migration failed:", migrationError);
-      const errorMessage = migrationError instanceof Error ? migrationError.message : "Unknown migration error";
-      throw new Error(`Database migration failed: ${errorMessage}`);
+      await prisma.user.count();
+      console.log("✅ User table exists");
+    } catch (tableError) {
+      console.error("❌ User table does not exist. You need to run database migration first.");
+      throw new Error("Database tables do not exist. Please run the migration endpoint first: /api/migrate-db");
     }
 
     // Get admin credentials from environment variables
@@ -43,6 +40,7 @@ export async function POST() {
     const adminPassword = process.env.ADMIN_PASSWORD;
     const adminName = process.env.ADMIN_NAME || "Hank";
 
+    console.log("👤 Creating admin user...");
     // Create admin user
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
@@ -59,6 +57,7 @@ export async function POST() {
       },
     });
 
+    console.log("📋 Creating profile...");
     // Create profile for admin user
     const profile = await prisma.profile.upsert({
       where: { userId: adminUser.id },
@@ -75,6 +74,7 @@ export async function POST() {
       },
     });
 
+    console.log("💼 Creating sample experience...");
     // Create sample experience
     const experience = await prisma.experience.create({
       data: {
@@ -88,6 +88,7 @@ export async function POST() {
       },
     });
 
+    console.log("🎓 Creating sample education...");
     // Create sample education
     const education = await prisma.education.create({
       data: {
@@ -106,16 +107,39 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       message: "Database setup completed successfully!",
-      data: { adminUser, profile, experience, education }
+      data: { 
+        adminUser: {
+          id: adminUser.id,
+          email: adminUser.email,
+          name: adminUser.name,
+          role: adminUser.role
+        }, 
+        profile: {
+          id: profile.id,
+          bio: profile.bio,
+          title: profile.title,
+          location: profile.location
+        }, 
+        experience, 
+        education 
+      }
     });
 
   } catch (error) {
-    console.error("❌ Error setting up database:", error);
+    console.error("❌ Database setup failed:", error);
+    
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
     return NextResponse.json(
       { 
         success: false, 
-        error: "Failed to setup database",
-        details: error instanceof Error ? error.message : "Unknown error"
+        error: "Database setup failed",
+        details: errorMessage,
+        environment: {
+          hasDatabaseUrl: !!process.env.DATABASE_URL,
+          hasAdminEmail: !!process.env.ADMIN_EMAIL,
+          hasAdminPassword: !!process.env.ADMIN_PASSWORD
+        }
       },
       { status: 500 }
     );
