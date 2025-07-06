@@ -4,13 +4,26 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+export async function GET() {
+  return await POST();
+}
+
 export async function POST() {
   try {
     console.log("🚀 Setting up production database...");
+    
+    // Check if environment variables are set
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL environment variable is not set");
+    }
+    
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+      throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required");
+    }
 
     // Get admin credentials from environment variables
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@hank.dev";
-    const adminPassword = process.env.ADMIN_PASSWORD || "HankSecure2024!";
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
     const adminName = process.env.ADMIN_NAME || "Hank";
 
     // Create admin user
