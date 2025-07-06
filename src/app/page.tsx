@@ -64,6 +64,7 @@ export default function Home() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [skillDomains, setSkillDomains] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -105,19 +106,21 @@ export default function Home() {
 
   const fetchData = async () => {
     try {
-      const [blogsResponse, profileResponse] = await Promise.all([
-        fetch("/api/blogs"),
-        fetch("/api/profile")
+      const [profileRes, blogsRes, skillDomainsRes] = await Promise.all([
+        fetch('/api/profile'),
+        fetch('/api/blogs?featured=true&limit=3'),
+        fetch('/api/skill-domains')
       ]);
 
-      const allBlogs = await blogsResponse.json();
-      const publishedBlogs = allBlogs.filter((blog: Blog) => blog.published);
-      setBlogs(publishedBlogs.slice(0, 3)); // Show latest 3 published blogs
+      const profileData = await profileRes.json();
+      const blogsData = await blogsRes.json();
+      const skillDomainsData = await skillDomainsRes.json();
 
-      const profileData = await profileResponse.json();
       setProfile(profileData);
+      setBlogs(blogsData);
+      setSkillDomains(skillDomainsData);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -472,9 +475,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Projects Section - From mockup */}
-      <section id="projects" className="py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Projects Section - Redesigned Without Images */}
+      <section id="projects" className="py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/30 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-indigo-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -482,11 +491,15 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Featured <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Projects</span>
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full mb-6">
+              <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Portfolio Showcase</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Featured <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">Projects</span>
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              A selection of my recent work showcasing different technologies and problem-solving approaches
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              A collection of innovative solutions and creative implementations showcasing modern web technologies
             </p>
           </motion.div>
 
@@ -496,256 +509,412 @@ export default function Home() {
                 .filter(project => project.featured)
                 .slice(0, 6)
                 .map((project, index) => (
-                              <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700"
-                >
-                  <div className="h-48 bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-4xl font-bold">
-                    {project.title.charAt(0)}
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                      {project.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.split(',').map((tech: string, techIndex: number) => (
-                        <span key={techIndex} className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full text-xs font-medium">
-                          {tech.trim()}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-4">
-                      {project.liveUrl && (
-                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:text-purple-600 dark:hover:text-purple-400 font-medium text-sm">
-                          Live Demo
-                        </a>
-                      )}
-                      {project.githubUrl && (
-                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:text-purple-600 dark:hover:text-purple-400 font-medium text-sm">
-                          View Code
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-600 dark:text-gray-400 py-12">
-                <p className="text-lg mb-2">No featured projects yet.</p>
-                <p className="text-sm">Check back soon for new projects!</p>
-              </div>
-                         )}
-            </div>
-        </div>
-      </section>
-
-      {/* Skills Section - Redesigned */}
-      <section id="skills" className="py-20 bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Technical <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Expertise</span>
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              A comprehensive toolkit of technologies and frameworks I use to build innovative solutions
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {profile?.skills ? (
-              (() => {
-                try {
-                  const skillDomains = JSON.parse(profile.skills);
-                  if (Array.isArray(skillDomains)) {
-                    return skillDomains.map((domain, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: index * 0.1 }}
-                        whileHover={{ y: -8, scale: 1.02 }}
-                        className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-700"
-                      >
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: index * 0.1 }}
+                    whileHover={{ y: -12, scale: 1.03 }}
+                    className="group relative"
+                  >
+                    {/* Main card */}
+                    <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-700 border border-gray-100 dark:border-gray-700 overflow-hidden">
+                      {/* Animated gradient border */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
+                      
+                      {/* Cover image section */}
+                      <div className="relative h-48 overflow-hidden">
+                        {project.imageUrl ? (
+                          <Image
+                            src={project.imageUrl}
+                            alt={project.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-700 blur-sm"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-600 flex items-center justify-center">
+                            <svg className="w-16 h-16 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
                         {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
                         
-                        {/* Header with icon */}
-                        <div className="relative p-6 pb-4">
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                              {domain.domain.charAt(0)}
-                            </div>
-                            <div>
-                              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                                {domain.domain}
-                              </h3>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {domain.technologies.length} technologies
-                              </p>
-                            </div>
+                        {/* Title overlay */}
+                        <div className="absolute inset-0 flex items-end p-6">
+                          <h3 className="text-xl font-bold text-white mb-2 group-hover:text-gray-100 transition-colors duration-300 line-clamp-2 drop-shadow-md">
+                            {project.title}
+                          </h3>
+                        </div>
+                        
+                        {/* Floating icon badge */}
+                        <div className="absolute top-4 right-4">
+                          <div className="w-12 h-12 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
+                            <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
                           </div>
                         </div>
+                      </div>
 
-                        {/* Skills grid */}
-                        <div className="relative px-6 pb-6">
-                          <div className="grid grid-cols-2 gap-2">
-                            {domain.technologies.slice(0, 6).map((tech: string, techIndex: number) => (
-                              <div
+                      {/* Content section */}
+                      <div className="p-6">
+                        {/* Description */}
+                        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3 min-h-[4em]">
+                          {project.description}
+                        </p>
+
+                        {/* Technologies */}
+                        <div className="mb-6">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {project.technologies.split(',').slice(0, 3).map((tech: string, techIndex: number) => (
+                              <motion.div
                                 key={techIndex}
-                                className="px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg text-center group-hover:from-indigo-50 group-hover:to-purple-50 dark:group-hover:from-indigo-900/20 dark:group-hover:to-purple-900/20 transition-all duration-300"
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: techIndex * 0.1 }}
+                                className="group/tech relative"
                               >
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                  {tech}
+                                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-700/50 group-hover/tech:from-indigo-100 group-hover/tech:to-purple-100 dark:group-hover/tech:from-indigo-800/50 dark:group-hover/tech:to-purple-800/50 transition-all duration-300 shadow-sm">
+                                  {tech.trim()}
                                 </span>
-                              </div>
+                              </motion.div>
                             ))}
-                            {domain.technologies.length > 6 && (
-                              <div className="px-3 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-lg text-center col-span-2">
-                                <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                                  +{domain.technologies.length - 6} more
-                                </span>
-                              </div>
+                            {project.technologies.split(',').length > 3 && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                                +{project.technologies.split(',').length - 3} more
+                              </span>
                             )}
                           </div>
                         </div>
 
-                        {/* Hover effect border */}
-                        <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-indigo-500/20 transition-all duration-500"></div>
-                      </motion.div>
-                    ));
-                  }
-                } catch {
-                  // Fallback to legacy format with improved design
-                  return profile.skills.split(',').slice(0, 6).map((skill, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      whileHover={{ y: -8, scale: 1.02 }}
-                      className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-700"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      
-                      <div className="relative p-6">
-                        <div className="flex items-center space-x-3 mb-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {skill.trim().charAt(0)}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                              {skill.trim()}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Technology
-                            </p>
-                          </div>
+                        {/* Action buttons */}
+                        <div className="flex gap-3">
+                          {project.liveUrl && (
+                            <motion.a
+                              href={project.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="flex-1 inline-flex items-center justify-center px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium text-sm hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                              Live Demo
+                            </motion.a>
+                          )}
+                          {project.githubUrl && (
+                            <motion.a
+                              href={project.githubUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="flex-1 inline-flex items-center justify-center px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md"
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                              </svg>
+                              View Code
+                            </motion.a>
+                          )}
                         </div>
                       </div>
 
-                      <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-indigo-500/20 transition-all duration-500"></div>
-                    </motion.div>
-                  ));
-                }
-              })()
+                      {/* Bottom accent line */}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    </div>
+                  </motion.div>
+                ))
             ) : (
-              // Default skills with improved design
+              <div className="col-span-full text-center text-gray-600 dark:text-gray-400 py-12">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center">
+                  <svg className="w-12 h-12 text-indigo-400 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No featured projects yet</h3>
+                <p className="text-gray-500 dark:text-gray-400">Check back soon for new projects!</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Skills Section - Ultra Modern Redesign */}
+      <section id="skills" className="py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/30 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-indigo-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-200/5 to-purple-200/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full mb-6">
+              <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Technical Mastery</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Skills & <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">Expertise</span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              A comprehensive arsenal of cutting-edge technologies and frameworks that power innovative digital solutions
+            </p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
+            {skillDomains.length > 0 ? (
+              skillDomains.map((domain, index) => (
+                <motion.div
+                  key={domain.id}
+                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                  whileHover={{ y: -6, scale: 1.02 }}
+                  className="group relative"
+                >
+                  {/* Main card */}
+                  <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-700 border border-white/20 dark:border-gray-700/50 overflow-hidden">
+                    {/* Animated gradient border */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
+                    
+                    {/* Header section */}
+                    <div className="relative p-8 pb-6">
+                      <div className="flex items-start space-x-4">
+                        {/* Animated icon container */}
+                        <div className="relative">
+                          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-105">
+                            {domain.icon || domain.domain.charAt(0)}
+                          </div>
+                          {/* Floating particles effect */}
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 animate-bounce transition-all duration-500"></div>
+                          <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-all duration-500 delay-200"></div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                            {domain.domain}
+                          </h3>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-1">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">Expertise</span>
+                              <div className="flex space-x-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <motion.div
+                                    key={i}
+                                    initial={{ scale: 0 }}
+                                    whileInView={{ scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.3, delay: i * 0.1 }}
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      i < (domain.expertise === 'Expert' ? 5 : 
+                                           domain.expertise === 'Advanced' ? 4 : 
+                                           domain.expertise === 'Intermediate' ? 3 : 2) 
+                                        ? 'bg-gradient-to-r from-blue-400 to-purple-400' 
+                                        : 'bg-gray-300 dark:bg-gray-600'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                              <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{domain.expertise}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Skills grid */}
+                    <div className="relative px-8 pb-8">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {JSON.parse(domain.technologies).slice(0, 8).map((tech: string, techIndex: number) => (
+                          <motion.div
+                            key={techIndex}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: techIndex * 0.05 }}
+                            className="group/tech relative"
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span className="text-sm text-gray-600 dark:text-gray-400 group-hover/tech:text-blue-600 dark:group-hover/tech:text-blue-400 transition-colors duration-300 font-medium">
+                                {tech}
+                              </span>
+                              {techIndex < Math.min(8, JSON.parse(domain.technologies).length - 1) && (
+                                <span className="text-gray-400 dark:text-gray-500 text-xs">•</span>
+                              )}
+                            </div>
+                          </motion.div>
+                        ))}
+                        {JSON.parse(domain.technologies).length > 8 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: 0.4 }}
+                            className="flex items-center space-x-1"
+                          >
+                            <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                            <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                              +{JSON.parse(domain.technologies).length - 8} more
+                            </span>
+                          </motion.div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bottom accent */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              // Enhanced default skills
               [
-                { title: "Backend Development", icon: "🔧", skills: ["Spring", "Node.js", "Python", "Express", "Java", "Go"] },
-                { title: "Frontend Development", icon: "⚛️", skills: ["React", "Vue.js", "TypeScript", "Tailwind CSS", "HTML/CSS", "Next.js"] },
-                { title: "DevOps & Cloud", icon: "☁️", skills: ["Jenkins", "Docker", "AWS", "Kubernetes", "CI/CD", "Terraform"] },
-                { title: "Database & Storage", icon: "🗄️", skills: ["MySQL", "PostgreSQL", "MongoDB", "Redis", "SQL", "Elasticsearch"] },
-                { title: "Development Tools", icon: "🛠️", skills: ["Git", "VS Code", "Postman", "Jira", "Figma", "Docker"] },
-                { title: "APIs & Integration", icon: "🔌", skills: ["REST APIs", "GraphQL", "WebSockets", "OAuth", "JWT", "Microservices"] }
+                { title: "Backend Development", icon: "🔧", skills: ["Spring Boot", "Node.js", "Python", "Express.js", "Java", "Go", "GraphQL", "REST APIs"] },
+                { title: "Frontend Development", icon: "⚛️", skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Vue.js", "HTML/CSS", "JavaScript", "Redux"] },
+                { title: "DevOps & Cloud", icon: "☁️", skills: ["Docker", "Kubernetes", "AWS", "Jenkins", "CI/CD", "Terraform", "Ansible", "Azure"] },
+                { title: "Database & Storage", icon: "🗄️", skills: ["PostgreSQL", "MongoDB", "Redis", "MySQL", "Elasticsearch", "SQL", "NoSQL", "Data Modeling"] },
+                { title: "Development Tools", icon: "🛠️", skills: ["Git", "VS Code", "Postman", "Jira", "Figma", "Docker", "Webpack", "ESLint"] },
+                { title: "APIs & Integration", icon: "🔌", skills: ["REST APIs", "GraphQL", "WebSockets", "OAuth 2.0", "JWT", "Microservices", "API Gateway", "Swagger"] }
               ].map((category, index) => (
                 <motion.div
                   key={category.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-700"
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                  whileHover={{ y: -6, scale: 1.02 }}
+                  className="group relative"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
-                  <div className="relative p-6 pb-4">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                        {category.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                          {category.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {category.skills.length} technologies
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="relative px-6 pb-6">
-                    <div className="grid grid-cols-2 gap-2">
-                      {category.skills.map((skill, skillIndex) => (
-                        <div
-                          key={skillIndex}
-                          className="px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg text-center group-hover:from-indigo-50 group-hover:to-purple-50 dark:group-hover:from-indigo-900/20 dark:group-hover:to-purple-900/20 transition-all duration-300"
-                        >
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {skill}
-                          </span>
+                  <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-700 border border-white/20 dark:border-gray-700/50 overflow-hidden">
+                    {/* Animated gradient border */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
+                    
+                    {/* Header section */}
+                    <div className="relative p-8 pb-6">
+                      <div className="flex items-start space-x-4">
+                        {/* Animated icon container */}
+                        <div className="relative">
+                          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-105">
+                            {category.icon}
+                          </div>
+                          {/* Floating particles effect */}
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 animate-bounce transition-all duration-500"></div>
+                          <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-all duration-500 delay-200"></div>
                         </div>
-                      ))}
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                            {category.title}
+                          </h3>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-1">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">Expertise</span>
+                              <div className="flex space-x-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <motion.div
+                                    key={i}
+                                    initial={{ scale: 0 }}
+                                    whileInView={{ scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.3, delay: i * 0.1 }}
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      i < 4 ? 'bg-gradient-to-r from-blue-400 to-purple-400' : 'bg-gray-300 dark:bg-gray-600'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                              <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Advanced</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-indigo-500/20 transition-all duration-500"></div>
+                                          <div className="relative px-8 pb-8">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {category.skills.map((skill, skillIndex) => (
+                            <motion.div
+                              key={skillIndex}
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.5, delay: skillIndex * 0.05 }}
+                              className="group/tech relative"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span className="text-sm text-gray-600 dark:text-gray-400 group-hover/tech:text-blue-600 dark:group-hover/tech:text-blue-400 transition-colors duration-300 font-medium">
+                                  {skill}
+                                </span>
+                                {skillIndex < category.skills.length - 1 && (
+                                  <span className="text-gray-400 dark:text-gray-500 text-xs">•</span>
+                                )}
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  </div>
                 </motion.div>
               ))
             )}
           </div>
 
-          {/* Call to action */}
+          {/* Enhanced call to action */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="text-center mt-12"
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-center mt-16"
           >
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Always learning and exploring new technologies
-            </p>
-            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                Continuously expanding skillset
-              </span>
+            <div className="inline-flex flex-col items-center space-y-6 p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Continuously Learning & Growing
+                </span>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
+                Always exploring new technologies, frameworks, and best practices to deliver cutting-edge solutions
+              </p>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Blog Section - Enhanced from mockup */}
-      <section id="blog" className="py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Blog Section - Redesigned */}
+      <section id="blog" className="py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/30 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-indigo-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -753,11 +922,15 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Latest from My <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Blog</span>
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full mb-6">
+              <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Featured Articles</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Featured <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">Articles</span>
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              Exploring web development, sharing tutorials, and discussing the latest tech trends
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Discover insights, tutorials, and thoughts on web development, technology trends, and creative solutions
             </p>
           </motion.div>
 
@@ -766,15 +939,17 @@ export default function Home() {
               {[1, 2, 3].map((i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 animate-pulse border border-gray-200 dark:border-gray-700"
+                  className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-pulse"
                 >
-                  <div className="h-48 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg mb-4" />
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                  <div className="h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-600 rounded-t-3xl" />
+                  <div className="p-6 space-y-4">
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -783,66 +958,113 @@ export default function Home() {
               {blogs.map((blog, index) => (
                 <motion.article
                   key={blog.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700"
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                  whileHover={{ y: -6, scale: 1.02 }}
+                  className="group relative"
                 >
-                  <div className="h-48 bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                    {blog.title.charAt(0)}
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(blog.publishedAt).toLocaleDateString()}
-                      </span>
-                      {blog.tags && (
-                        <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full text-xs font-medium">
-                          {blog.tags.split(',')[0].trim()}
-                        </span>
-                      )}
+                  <Link href={`/blogs/${blog.slug}`} className="block">
+                    {/* Main card */}
+                    <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-700 border border-gray-100 dark:border-gray-700 overflow-hidden cursor-pointer">
+                      {/* Animated gradient border */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
+                      
+                      {/* Cover image section */}
+                      <div className="relative h-32 overflow-hidden">
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-600 flex items-center justify-center text-white text-3xl font-bold group-hover:scale-105 transition-transform duration-700">
+                          {blog.title.charAt(0)}
+                        </div>
+                        {/* Gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
+                        
+                        {/* Floating icon badge */}
+                        <div className="absolute top-3 right-3">
+                          <div className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg">
+                            <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Content section */}
+                      <div className="p-6">
+                        {/* Meta information */}
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                            {new Date(blog.publishedAt).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'short', 
+                              day: 'numeric' 
+                            })}
+                          </span>
+                          {blog.tags && (
+                            <span className="px-3 py-1 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-700/50 rounded-full text-xs font-medium">
+                              {blog.tags.split(',')[0].trim()}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 line-clamp-2">
+                          {blog.title}
+                        </h3>
+
+                        {/* Excerpt */}
+                        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6 line-clamp-3 min-h-[4em]">
+                          {blog.excerpt || blog.title}
+                        </p>
+
+                        {/* Read More indicator */}
+                        <div className="inline-flex items-center text-indigo-600 dark:text-indigo-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 font-medium text-sm">
+                          <span className="mr-2">Read More</span>
+                          <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Bottom accent line */}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2">
-                      {blog.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                      {blog.excerpt || blog.title}
-                    </p>
-                    <Link
-                      href={`/blogs/${blog.slug}`}
-                      className="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-purple-600 dark:hover:text-purple-400 font-medium"
-                    >
-                      Read More →
-                    </Link>
-                  </div>
+                  </Link>
                 </motion.article>
               ))}
             </div>
           ) : (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center text-gray-600 dark:text-gray-400"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center text-gray-600 dark:text-gray-400 py-12"
             >
-              <p className="text-lg mb-2">No published blogs yet.</p>
-              <p className="text-sm">Check back soon for new content!</p>
+              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 text-indigo-400 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No published blogs yet</h3>
+              <p className="text-gray-500 dark:text-gray-400">Check back soon for new content!</p>
             </motion.div>
           )}
 
           {blogs.length > 0 && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-center mt-12"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="text-center mt-16"
             >
               <Link
                 href="/blogs"
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                View All Articles
+                <span className="mr-2">View All Articles</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </Link>
             </motion.div>
           )}
@@ -850,8 +1072,14 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="contact" className="py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/30 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-indigo-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -859,11 +1087,15 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Let's Connect
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full mb-6">
+              <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Get In Touch</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Let's <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">Connect</span>
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              I'm always interested in new opportunities and collaborations
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Ready to bring your ideas to life? I'm always excited to explore new opportunities and creative collaborations
             </p>
           </motion.div>
 
