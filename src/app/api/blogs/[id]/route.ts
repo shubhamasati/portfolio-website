@@ -54,17 +54,49 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { title, content, excerpt, tags, published } = body;
+    const { 
+      title, 
+      content, 
+      excerpt, 
+      tags, 
+      published, 
+      category, 
+      seoTitle, 
+      seoDescription, 
+      coverImage, 
+      featured,
+      scheduledAt,
+      status,
+      showViews
+    } = body;
 
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
-    if (content !== undefined) updateData.content = content;
+    if (content !== undefined) {
+      updateData.content = content;
+      // Recalculate reading time
+      const wordCount = content.split(/\s+/).length;
+      updateData.readTime = Math.ceil(wordCount / 200);
+    }
     if (excerpt !== undefined) updateData.excerpt = excerpt;
     if (tags !== undefined) updateData.tags = tags;
+    if (category !== undefined) updateData.category = category;
+    if (seoTitle !== undefined) updateData.seoTitle = seoTitle;
+    if (seoDescription !== undefined) updateData.seoDescription = seoDescription;
+    if (coverImage !== undefined) updateData.coverImage = coverImage;
+    if (featured !== undefined) updateData.featured = featured;
+    if (scheduledAt !== undefined) updateData.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+    if (status !== undefined) updateData.status = status;
+    if (showViews !== undefined) updateData.showViews = showViews;
+    
     if (published !== undefined) {
       updateData.published = published;
       updateData.publishedAt = published ? new Date() : null;
+      updateData.status = published ? "published" : "draft";
     }
+
+    // Always update last edited time
+    updateData.lastEditedAt = new Date();
 
     const blog = await prisma.blog.update({
       where: { id },

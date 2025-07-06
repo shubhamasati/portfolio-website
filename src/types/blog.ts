@@ -6,4 +6,5 @@ export interface Blog {
   publishedAt: string;
   published: boolean;
   tags: string;
+  claps: number;
 } 

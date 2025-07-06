@@ -13,6 +13,23 @@ export async function GET(
         slug: slug,
         published: true 
       },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        tags: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+        slug: true,
+        views: true,
+        claps: true,
+        category: true,
+        coverImage: true,
+        readTime: true,
+        showViews: true,
+      },
     });
 
     if (!blog) {

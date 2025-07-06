@@ -1,4 +1,4 @@
-# 🚀 Hank Huge - Personal Portfolio & Blog
+# 🚀 Hank - Personal Portfolio & Blog
 
 A modern, responsive portfolio website with a blog system, built with Next.js, TypeScript, and Tailwind CSS. Features a beautiful purple gradient theme, smooth animations, and a complete admin panel for content management.
 
@@ -257,8 +257,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you have any questions or need help:
 - Create an issue in the repository
 - Email: hank@example.com
-- LinkedIn: [Hank Huge](https://linkedin.com/in/hankhuge)
+- LinkedIn: [Hank](https://linkedin.com/in/hankhuge)
 
 ---
 
-**Built with ❤️ by Hank Huge**
+**Built with ❤️ by Hank**

@@ -27,22 +27,26 @@ model User {
 }
 
 model Profile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id])
-  bio         String?
-  title       String?
-  location    String?
-  website     String?
-  github      String?
-  linkedin    String?
-  twitter     String?
-  skills      String?  // Comma-separated skills
-  experience  String?  // JSON string for experience
-  education   String?  // JSON string for education
-  avatar      String?  // URL to avatar image
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  bio               String?
+  aboutMe           String?  // Detailed about me section
+  title             String?
+  location          String?
+  website           String?
+  github            String?
+  linkedin          String?
+  twitter           String?
+  skills            String?  // Comma-separated skills
+  experience        String?  // JSON string for experience
+  education         String?  // JSON string for education
+  avatar            String?  // URL to avatar image
+  availabilityStatus String? // "available", "open_to_work", "not_available", "disabled"
+  projects          Project[] // Relation to projects
+  socialMedia       SocialMedia[] // Relation to social media handles
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Blog {
@@ -59,4 +63,44 @@ model Blog {
   publishedAt DateTime?
   tags        String?  // Comma-separated tags
   featured    Boolean  @default(false)
+  readTime    Int?     // Estimated reading time in minutes
+  views       Int      @default(0) // View count
+  claps       Int      @default(0) // Clap count (like Medium)
+  category    String?  // Blog category
+  seoTitle    String?  // SEO optimized title
+  seoDescription String? // SEO meta description
+  coverImage  String?  // Cover image URL
+  status      String   @default("draft") // draft, published, archived
+  scheduledAt DateTime? // For scheduled publishing
+  lastEditedAt DateTime? // Track last edit time
+  showViews   Boolean  @default(true) // Control views visibility per blog
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  technologies String  // Comma-separated technologies
+  imageUrl    String?  // URL to project image
+  liveUrl     String?  // URL to live project
+  githubUrl   String?  // URL to GitHub repository
+  featured    Boolean  @default(false)
+  order       Int      @default(0) // For ordering projects
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SocialMedia {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  platform  String   // e.g., "GitHub", "LinkedIn", "Twitter", "Instagram", "YouTube", etc.
+  url       String   // The social media URL
+  username  String?  // Optional username for display
+  icon      String?  // Icon name or class for rendering
+  order     Int      @default(0) // For ordering social media handles
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

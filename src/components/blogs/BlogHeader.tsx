@@ -6,11 +6,11 @@ export default function BlogHeader() {
   return (
     <>
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200">
+      <header className="fixed top-0 w-full z-50 bg-gray-100/95 backdrop-blur-xl border-b border-gray-200">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Hank Huge
+              Hank
             </Link>
             <Link 
               href="/" 
@@ -26,7 +26,7 @@ export default function BlogHeader() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <section className="pt-20 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -34,11 +34,11 @@ export default function BlogHeader() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              My <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Blog</span>
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Knowledge <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Hub</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Exploring web development, sharing tutorials, and discussing the latest tech trends
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
+              Deep dives into web development, practical tutorials, and insights from the frontlines of modern software engineering
             </p>
           </motion.div>
         </div>

@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { useEffect, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { motion } from 'framer-motion';
 
 interface Blog {
   id: string;
@@ -15,6 +16,12 @@ interface Blog {
   createdAt: Date;
   updatedAt: Date;
   slug: string;
+  views: number;
+  claps: number;
+  category: string | null;
+  coverImage: string | null;
+  readTime: number | null;
+  showViews: boolean;
 }
 
 interface BlogPostPageProps {
@@ -25,6 +32,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [clapCount, setClapCount] = useState(0);
+  const [clapLoading, setClapLoading] = useState(false);
+  const [userClaps, setUserClaps] = useState(0);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -39,6 +49,12 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         
         const blogData = await response.json();
         setBlog(blogData);
+        setClapCount(blogData.claps || 0);
+
+        // Track view
+        await fetch(`/api/blogs/${blogData.id}/view`, {
+          method: 'POST'
+        });
       } catch (error) {
         setError(true);
       } finally {
@@ -48,6 +64,31 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
     fetchBlog();
   }, [params]);
+
+  const handleClap = async () => {
+    if (!blog || clapLoading) return;
+
+    setClapLoading(true);
+    try {
+      const response = await fetch(`/api/blogs/${blog.id}/clap`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ clapCount: 1 })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setClapCount(data.claps);
+        setUserClaps(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error adding clap:', error);
+    } finally {
+      setClapLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -91,19 +132,109 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 relative">
+        {/* Simple Floating Engagement Sidebar */}
+        <div className="fixed left-[calc(50%+28rem+8px)] top-1/2 transform -translate-y-1/2 z-10 hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-full shadow-lg border border-gray-200 p-1.5 space-y-1.5"
+          >
+            {/* Clap Button */}
+            <div className="text-center">
+              <motion.button
+                whileHover={{ scale: 1.15, y: -2 }}
+                whileTap={{ scale: 0.9, y: 0 }}
+                onClick={handleClap}
+                disabled={clapLoading}
+                className="w-8 h-8 rounded-full bg-blue-50 border-2 border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 flex items-center justify-center group shadow-md hover:shadow-lg"
+              >
+                <svg className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform duration-200" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </motion.button>
+              <div className="mt-1 text-xs font-semibold text-blue-600">{clapCount}</div>
+            </div>
+
+            {/* Views (Admin controlled) */}
+            {blog.showViews && (
+              <div className="text-center pt-1.5 border-t border-gray-100">
+                <div className="flex items-center justify-center text-gray-500 mb-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </div>
+                <div className="text-xs font-medium text-gray-700">{blog.views}</div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Mobile Engagement Bar */}
+        <div className="lg:hidden fixed bottom-4 left-4 right-4 z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-lg shadow-lg border border-gray-200 p-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleClap}
+                  disabled={clapLoading}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 shadow-sm hover:shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                  <span>{clapLoading ? '...' : 'Like'}</span>
+                </motion.button>
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold text-blue-600">{clapCount}</span> likes
+                </div>
+              </div>
+              {blog.showViews && (
+                <div className="flex items-center space-x-1 text-gray-500">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span className="text-sm">{blog.views}</span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+
         <article className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          {/* Cover Image */}
+          {blog.coverImage && (
+            <div className="relative h-64 md:h-80">
+              <img 
+                src={blog.coverImage} 
+                alt={blog.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+            </div>
+          )}
+
           {/* Article Header */}
           <header className="p-8 border-b border-gray-200">
             <div className="flex items-center text-sm text-gray-500 mb-4">
               <span>{new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               <span className="mx-2">•</span>
-              <span>5 min read</span>
-              {blog.tags && (
+              <span>{blog.readTime || 5} min read</span>
+              {blog.category && (
                 <>
                   <span className="mx-2">•</span>
-                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                    {blog.tags.split(',')[0]?.trim() || 'Article'}
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    {blog.category}
                   </span>
                 </>
               )}
@@ -199,18 +330,18 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                   ),
                   table: (props) => (
                     <div className="overflow-x-auto my-4">
-                      <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                      <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
                         {props.children}
                       </table>
                     </div>
                   ),
                   th: (props) => (
-                    <th className="px-4 py-2 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                       {props.children}
                     </th>
                   ),
                   td: (props) => (
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border-b border-gray-100">
+                    <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
                       {props.children}
                     </td>
                   ),
@@ -220,17 +351,15 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               </ReactMarkdown>
             </div>
 
-            {/* Tags Section */}
+            {/* Tags */}
             {blog.tags && (
-              <div className="mt-12 pt-8 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-900 mb-3 uppercase tracking-wide">
-                  Tags
-                </h3>
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags:</h3>
                 <div className="flex flex-wrap gap-2">
                   {blog.tags.split(',').map((tag: string, index: number) => (
                     <span
                       key={index}
-                      className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm border border-gray-200"
+                      className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium"
                     >
                       {tag.trim()}
                     </span>
@@ -238,19 +367,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
               </div>
             )}
-
-            {/* Author Info */}
-            <div className="mt-12 pt-8 border-t border-gray-200">
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-gray-700 font-semibold text-sm">H</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Hank Huge</p>
-                  <p className="text-gray-600 text-sm">Full Stack Developer & Tech Enthusiast</p>
-                </div>
-              </div>
-            </div>
           </div>
         </article>
       </div>

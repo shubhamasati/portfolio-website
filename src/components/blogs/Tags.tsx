@@ -1,23 +1,23 @@
 "use client";
 import { motion } from "framer-motion";
 
-interface CategoriesProps {
+interface TagsProps {
   tags: string[];
   selectedTag: string;
   onTagSelect: (tag: string) => void;
 }
 
-export default function Categories({ tags, selectedTag, onTagSelect }: CategoriesProps) {
+export default function Tags({ tags, selectedTag, onTagSelect }: TagsProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.4 }}
-      className="bg-white rounded-lg shadow-sm p-6 border border-gray-200"
+      className="bg-white rounded-lg shadow-sm p-4 border border-gray-200"
     >
-      <h3 className="text-xl font-semibold text-gray-900 mb-6 relative">
-        Categories
-        <div className="absolute bottom-0 left-0 w-12 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded"></div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 relative">
+        Tags
+        <div className="absolute bottom-0 left-0 w-10 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded"></div>
       </h3>
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (

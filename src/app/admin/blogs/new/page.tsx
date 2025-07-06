@@ -6,24 +6,57 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 
+interface FormData {
+  title: string;
+  content: string;
+  excerpt: string;
+  tags: string;
+  published: boolean;
+  category: string;
+  seoTitle: string;
+  seoDescription: string;
+  coverImage: string;
+  featured: boolean;
+  scheduledAt: string;
+}
+
+const CATEGORIES = [
+  "Technology",
+  "Programming",
+  "Web Development",
+  "Mobile Development",
+  "Design",
+  "Business",
+  "Personal",
+  "Tutorial",
+  "Review",
+  "Opinion"
+];
+
 export default function NewBlog() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
-  const [formData, setFormData] = useState({
+  const [activeTab, setActiveTab] = useState<"edit" | "preview" | "settings">("edit");
+  const [formData, setFormData] = useState<FormData>({
     title: "",
     content: "",
     excerpt: "",
     tags: "",
     published: false,
+    category: "",
+    seoTitle: "",
+    seoDescription: "",
+    coverImage: "",
+    featured: false,
+    scheduledAt: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-700">Loading...</div>
       </div>
     );
   }
@@ -60,10 +93,21 @@ export default function NewBlog() {
     }
   };
 
+  const handleInputChange = (field: keyof FormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const PreviewContent = () => (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* Hero Section */}
       <div className="relative h-64 bg-gradient-to-r from-blue-600 to-purple-600">
+        {formData.coverImage && (
+          <img 
+            src={formData.coverImage} 
+            alt={formData.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="relative h-full flex items-center justify-center">
           <div className="text-center text-white">
@@ -74,11 +118,11 @@ export default function NewBlog() {
               <span>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               <span>•</span>
               <span>5 min read</span>
-              {formData.tags && (
+              {formData.category && (
                 <>
                   <span>•</span>
                   <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
-                    {formData.tags.split(',')[0]?.trim() || 'Tag'}
+                    {formData.category}
                   </span>
                 </>
               )}
@@ -184,170 +228,290 @@ export default function NewBlog() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
+        className="bg-white shadow-sm border-b border-gray-200"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Create New Blog
+              <h1 className="text-2xl font-bold text-gray-900">
+                Create New Blog Post
               </h1>
+              <p className="text-gray-600 mt-1">
+                Write and publish your next great article
+              </p>
             </div>
-            <Link
-              href="/admin/dashboard"
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-            >
-              ← Back to Dashboard
-            </Link>
+            <div className="flex space-x-4">
+              <Link
+                href="/admin/dashboard"
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                form="blog-form"
+                disabled={loading}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              >
+                {loading ? "Saving..." : "Save Draft"}
+              </button>
+              <button
+                onClick={() => handleInputChange("published", true)}
+                type="submit"
+                form="blog-form"
+                disabled={loading}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {loading ? "Publishing..." : "Publish"}
+              </button>
+            </div>
           </div>
         </div>
       </motion.header>
 
+      {/* Navigation Tabs */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab("edit")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "edit"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Write
+            </button>
+            <button
+              onClick={() => setActiveTab("preview")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "preview"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Preview
+            </button>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "settings"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Settings
+            </button>
+          </nav>
+        </div>
+      </div>
+
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {/* Tabs */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-            <div className="border-b border-gray-200 dark:border-gray-700">
-              <nav className="-mb-px flex space-x-8 px-6">
-                <button
-                  onClick={() => setActiveTab("edit")}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "edit"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => setActiveTab("preview")}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "preview"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
-                  Preview
-                </button>
-              </nav>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form id="blog-form" onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800">{error}</p>
             </div>
-          </div>
+          )}
 
-          {activeTab === "edit" ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    required
-                  />
-                </div>
+          {activeTab === "edit" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                  placeholder="Enter your blog title..."
+                  required
+                />
+              </div>
 
+              {/* Content */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Content *
+                </label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => handleInputChange("content", e.target.value)}
+                  className="w-full h-96 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                  placeholder="Write your blog content in Markdown..."
+                  required
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  Supports Markdown formatting
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === "preview" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <PreviewContent />
+            </motion.div>
+          )}
+
+          {activeTab === "settings" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+            >
+              {/* Left Column */}
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Excerpt
                   </label>
                   <textarea
                     value={formData.excerpt}
-                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                    onChange={(e) => handleInputChange("excerpt", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Brief description of your post..."
                     rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    placeholder="A brief summary of your blog post..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Content *
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category
                   </label>
-                  <textarea
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    rows={15}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
-                    placeholder="Write your blog content here... (Markdown supported)"
-                    required
-                  />
+                  <select
+                    value={formData.category}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  >
+                    <option value="">Select a category</option>
+                    {CATEGORIES.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tags
                   </label>
                   <input
                     type="text"
                     value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    placeholder="web-development, react, nextjs (comma-separated)"
+                    onChange={(e) => handleInputChange("tags", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="tag1, tag2, tag3"
                   />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Separate tags with commas
+                  </p>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="published"
-                    checked={formData.published}
-                    onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="published" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                    Publish immediately
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cover Image URL
                   </label>
+                  <input
+                    type="url"
+                    value={formData.coverImage}
+                    onChange={(e) => handleInputChange("coverImage", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SEO Title
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.seoTitle}
+                    onChange={(e) => handleInputChange("seoTitle", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="SEO optimized title for search engines"
+                  />
                 </div>
 
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg"
-                  >
-                    {error}
-                  </motion.div>
-                )}
-
-                <div className="flex justify-end space-x-4">
-                  <Link
-                    href="/admin/dashboard"
-                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Cancel
-                  </Link>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="submit"
-                    disabled={loading}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {loading ? "Creating..." : "Create Blog"}
-                  </motion.button>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SEO Description
+                  </label>
+                  <textarea
+                    value={formData.seoDescription}
+                    onChange={(e) => handleInputChange("seoDescription", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Meta description for search engines..."
+                    rows={3}
+                  />
                 </div>
-              </form>
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow p-6">
-              <PreviewContent />
-            </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Schedule Publish Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={formData.scheduledAt}
+                    onChange={(e) => handleInputChange("scheduledAt", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Leave empty to publish immediately
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      checked={formData.featured}
+                      onChange={(e) => handleInputChange("featured", e.target.checked)}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="featured" className="ml-2 block text-sm text-gray-900">
+                      Feature this post
+                    </label>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="published"
+                      checked={formData.published}
+                      onChange={(e) => handleInputChange("published", e.target.checked)}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="published" className="ml-2 block text-sm text-gray-900">
+                      Publish immediately
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           )}
-        </motion.div>
-      </main>
+        </form>
+      </div>
     </div>
   );
 } 

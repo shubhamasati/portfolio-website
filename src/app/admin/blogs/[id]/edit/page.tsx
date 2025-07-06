@@ -13,37 +13,79 @@ interface Blog {
   excerpt: string;
   tags: string;
   published: boolean;
+  category: string;
+  seoTitle: string;
+  seoDescription: string;
+  coverImage: string;
+  featured: boolean;
+  scheduledAt: string | null;
+  status: string;
 }
 
-export default function EditBlog({ params }: { params: { id: string } }) {
+interface EditBlogProps {
+  params: Promise<{ id: string }>;
+}
+
+const CATEGORIES = [
+  "Technology",
+  "Programming",
+  "Web Development",
+  "Mobile Development",
+  "Design",
+  "Business",
+  "Personal",
+  "Tutorial",
+  "Review",
+  "Opinion"
+];
+
+export default function EditBlog({ params }: EditBlogProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
+  const [activeTab, setActiveTab] = useState<"edit" | "preview" | "settings">("edit");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     excerpt: "",
     tags: "",
     published: false,
+    category: "",
+    seoTitle: "",
+    seoDescription: "",
+    coverImage: "",
+    featured: false,
+    scheduledAt: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [blogId, setBlogId] = useState<string>("");
 
   useEffect(() => {
-    if (status === "loading") return;
-    
-    if (!session || session.user?.role !== "admin") {
-      router.push("/admin/login");
-      return;
-    }
+    const initializePage = async () => {
+      if (status === "loading") return;
+      
+      if (!session || session.user?.role !== "admin") {
+        router.push("/admin/login");
+        return;
+      }
 
-    fetchBlog();
-  }, [session, status, router, params.id]);
+      try {
+        const { id } = await params;
+        setBlogId(id);
+        await fetchBlog(id);
+      } catch (error) {
+        setError("Failed to load blog");
+        setLoading(false);
+      }
+    };
 
-  const fetchBlog = async () => {
+    initializePage();
+  }, [session, status, router, params]);
+
+  const fetchBlog = async (id: string) => {
     try {
-      const response = await fetch(`/api/blogs/${params.id}`);
+      const response = await fetch(`/api/blogs/${id}`);
       if (!response.ok) {
         throw new Error("Blog not found");
       }
@@ -54,6 +96,12 @@ export default function EditBlog({ params }: { params: { id: string } }) {
         excerpt: blog.excerpt || "",
         tags: blog.tags || "",
         published: blog.published,
+        category: blog.category || "",
+        seoTitle: blog.seoTitle || "",
+        seoDescription: blog.seoDescription || "",
+        coverImage: blog.coverImage || "",
+        featured: blog.featured || false,
+        scheduledAt: blog.scheduledAt ? new Date(blog.scheduledAt).toISOString().slice(0, 16) : "",
       });
     } catch (error) {
       setError("Failed to load blog");
@@ -68,7 +116,7 @@ export default function EditBlog({ params }: { params: { id: string } }) {
     setError("");
 
     try {
-      const response = await fetch(`/api/blogs/${params.id}`, {
+      const response = await fetch(`/api/blogs/${blogId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -89,10 +137,21 @@ export default function EditBlog({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleInputChange = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const PreviewContent = () => (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* Hero Section */}
       <div className="relative h-64 bg-gradient-to-r from-blue-600 to-purple-600">
+        {formData.coverImage && (
+          <img 
+            src={formData.coverImage} 
+            alt={formData.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="relative h-full flex items-center justify-center">
           <div className="text-center text-white">
@@ -103,11 +162,11 @@ export default function EditBlog({ params }: { params: { id: string } }) {
               <span>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               <span>•</span>
               <span>5 min read</span>
-              {formData.tags && (
+              {formData.category && (
                 <>
                   <span>•</span>
                   <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
-                    {formData.tags.split(',')[0]?.trim() || 'Tag'}
+                    {formData.category}
                   </span>
                 </>
               )}
@@ -214,30 +273,30 @@ export default function EditBlog({ params }: { params: { id: string } }) {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-700">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
+        className="bg-white shadow-sm border-b border-gray-200"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Edit Blog
               </h1>
             </div>
             <Link
               href="/admin/dashboard"
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               ← Back to Dashboard
             </Link>
@@ -253,14 +312,14 @@ export default function EditBlog({ params }: { params: { id: string } }) {
           transition={{ delay: 0.2 }}
         >
           {/* Tabs */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-            <div className="border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8 px-6">
                 <button
                   onClick={() => setActiveTab("edit")}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === "edit"
-                      ? "border-indigo-500 text-indigo-600"
+                      ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
@@ -268,25 +327,35 @@ export default function EditBlog({ params }: { params: { id: string } }) {
                 </button>
                 <button
                   onClick={() => setActiveTab("preview")}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === "preview"
-                      ? "border-indigo-500 text-indigo-600"
+                      ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
                   Preview
                 </button>
+                <button
+                  onClick={() => setActiveTab("settings")}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === "settings"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  Settings
+                </button>
               </nav>
             </div>
           </div>
 
-          {activeTab === "edit" ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          {activeTab === "edit" && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg mb-6"
+                  className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200 mb-6"
                 >
                   {error}
                 </motion.div>
@@ -294,55 +363,55 @@ export default function EditBlog({ params }: { params: { id: string } }) {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Title *
                   </label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg text-gray-900 placeholder-gray-500"
+                    placeholder="Enter your blog title..."
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Excerpt
                   </label>
                   <textarea
                     value={formData.excerpt}
-                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                    onChange={(e) => handleInputChange("excerpt", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Brief description of your post..."
                     rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    placeholder="A brief summary of your blog post..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Content *
                   </label>
                   <textarea
                     value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    rows={15}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
-                    placeholder="Write your blog content here... (Markdown supported)"
+                    onChange={(e) => handleInputChange("content", e.target.value)}
+                    className="w-full h-96 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm text-gray-900 placeholder-gray-500"
+                    placeholder="Write your blog content in Markdown..."
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tags
                   </label>
                   <input
                     type="text"
                     value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    placeholder="web-development, react, nextjs (comma-separated)"
+                    onChange={(e) => handleInputChange("tags", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="tag1, tag2, tag3"
                   />
                 </div>
 
@@ -351,10 +420,10 @@ export default function EditBlog({ params }: { params: { id: string } }) {
                     type="checkbox"
                     id="published"
                     checked={formData.published}
-                    onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    onChange={(e) => handleInputChange("published", e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="published" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  <label htmlFor="published" className="ml-2 block text-sm text-gray-700">
                     Publish this post
                   </label>
                 </div>
@@ -362,7 +431,7 @@ export default function EditBlog({ params }: { params: { id: string } }) {
                 <div className="flex justify-end space-x-4">
                   <Link
                     href="/admin/dashboard"
-                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Cancel
                   </Link>
@@ -371,16 +440,137 @@ export default function EditBlog({ params }: { params: { id: string } }) {
                     whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={saving}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {saving ? "Saving..." : "Save Changes"}
                   </motion.button>
                 </div>
               </form>
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow p-6">
+          )}
+
+          {activeTab === "preview" && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <PreviewContent />
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200 mb-6"
+                >
+                  {error}
+                </motion.div>
+              )}
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  >
+                    <option value="">Select a category</option>
+                    {CATEGORIES.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SEO Title
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.seoTitle}
+                    onChange={(e) => handleInputChange("seoTitle", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="SEO optimized title for search engines"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SEO Description
+                  </label>
+                  <textarea
+                    value={formData.seoDescription}
+                    onChange={(e) => handleInputChange("seoDescription", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Meta description for search engines..."
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cover Image URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.coverImage}
+                    onChange={(e) => handleInputChange("coverImage", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    checked={formData.featured}
+                    onChange={(e) => handleInputChange("featured", e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="featured" className="ml-2 block text-sm text-gray-700">
+                    Feature this post on the homepage
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Schedule Publish Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={formData.scheduledAt}
+                    onChange={(e) => handleInputChange("scheduledAt", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Leave empty to publish immediately when saved
+                  </p>
+                </div>
+
+                <div className="flex justify-end space-x-4">
+                  <Link
+                    href="/admin/dashboard"
+                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </Link>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSubmit}
+                    disabled={saving}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
+                  </motion.button>
+                </div>
+              </div>
             </div>
           )}
         </motion.div>

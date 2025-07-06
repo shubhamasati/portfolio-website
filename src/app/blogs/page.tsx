@@ -8,7 +8,7 @@ import LoadingSkeleton from "@/components/blogs/LoadingSkeleton";
 import EmptyState from "@/components/blogs/EmptyState";
 import Pagination from "@/components/blogs/Pagination";
 import PopularPosts from "@/components/blogs/PopularPosts";
-import Categories from "@/components/blogs/Categories";
+import Tags from "@/components/blogs/Tags";
 import NewsletterSubscribe from "@/components/blogs/NewsletterSubscribe";
 
 export default function BlogsPage() {
@@ -70,7 +70,7 @@ export default function BlogsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
       <BlogHeader />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,14 +86,14 @@ export default function BlogsPage() {
       {/* Main Content */}
       <section className="pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Blog Posts - 2/3 width */}
-            <div className="lg:col-span-2">
+          <div className="grid lg:grid-cols-4 gap-8">
+            {/* Blog Posts - 3/4 width */}
+            <div className="lg:col-span-3">
               {loading ? (
                 <LoadingSkeleton />
               ) : currentBlogs.length > 0 ? (
                 <>
-                  <div className="space-y-8">
+                  <div className="space-y-4">
                     {currentBlogs.map((blog, index) => (
                       <BlogCard key={blog.id} blog={blog} index={index} />
                     ))}
@@ -113,11 +113,11 @@ export default function BlogsPage() {
               )}
             </div>
 
-            {/* Sidebar - 1/3 width */}
+            {/* Sidebar - 1/4 width */}
             <div className="lg:col-span-1">
-              <div className="space-y-8">
+              <div className="space-y-6">
                 <PopularPosts posts={popularPosts} />
-                <Categories
+                <Tags
                   tags={allTags}
                   selectedTag={selectedTag}
                   onTagSelect={setSelectedTag}
