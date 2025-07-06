@@ -7,9 +7,10 @@ const prisma = new PrismaClient();
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
@@ -37,7 +38,7 @@ export async function PUT(
     }
 
     const socialMedia = await prisma.socialMedia.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         platform,
         url,
@@ -56,9 +57,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
@@ -79,7 +81,7 @@ export async function DELETE(
     }
 
     await prisma.socialMedia.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Social media handle deleted successfully" });

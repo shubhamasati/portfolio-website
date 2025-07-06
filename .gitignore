@@ -41,3 +41,19 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+prisma/dev.db
+
+# Test and debug files
+debug-*.js
+test-*.js
+seed-*.js
+update-*.js
+
+# Seed files (contain sensitive data)
+prisma/seed.ts
+prisma/seed-*.js

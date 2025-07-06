@@ -1,8 +1,39 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+
+interface Profile {
+  user?: {
+    name: string;
+    email: string;
+  };
+}
 
 export default function BlogHeader() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch("/api/profile");
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayName = profile?.user?.name || "Hank";
+
   return (
     <>
       {/* Header */}
@@ -10,7 +41,7 @@ export default function BlogHeader() {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Hank
+              {displayName}
             </Link>
             <Link 
               href="/" 
@@ -19,7 +50,7 @@ export default function BlogHeader() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Back to Home
+              View Author Profile
             </Link>
           </div>
         </nav>

@@ -13,35 +13,35 @@ async function main() {
     return;
   }
 
-  // Sample projects
+  // Sample projects - generic examples without personal data
   const projects = [
     {
       title: "Task Management App",
-      description: "A full-stack productivity application with real-time collaboration, drag-and-drop functionality, and smart notifications.",
+      description: "A full-stack productivity application with real-time collaboration and smart notifications.",
       technologies: "React, Node.js, MongoDB, Socket.io",
       imageUrl: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=400&h=300&fit=crop",
-      liveUrl: "https://task-app-demo.com",
-      githubUrl: "https://github.com/username/task-app",
+      liveUrl: "",
+      githubUrl: "",
       featured: true,
       order: 1,
     },
     {
       title: "E-commerce Platform",
-      description: "Modern e-commerce solution with advanced search, payment integration, and comprehensive admin dashboard.",
+      description: "Modern e-commerce solution with advanced search and payment integration.",
       technologies: "Next.js, PostgreSQL, Stripe, AWS",
       imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop",
-      liveUrl: "https://ecommerce-demo.com",
-      githubUrl: "https://github.com/username/ecommerce",
+      liveUrl: "",
+      githubUrl: "",
       featured: true,
       order: 2,
     },
     {
       title: "Analytics Dashboard",
-      description: "Real-time analytics dashboard with interactive charts, data visualization, and customizable reporting features.",
+      description: "Real-time analytics dashboard with interactive charts and data visualization.",
       technologies: "Vue.js, D3.js, Python, Redis",
       imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
-      liveUrl: "https://analytics-demo.com",
-      githubUrl: "https://github.com/username/analytics",
+      liveUrl: "",
+      githubUrl: "",
       featured: true,
       order: 3,
     },

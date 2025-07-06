@@ -6,11 +6,12 @@ const prisma = new PrismaClient();
 // GET single skill domain
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const skillDomain = await prisma.skillDomain.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!skillDomain) {
@@ -33,14 +34,15 @@ export async function GET(
 // PUT update skill domain
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { domain, expertise, technologies, icon, order } = body;
 
     const skillDomain = await prisma.skillDomain.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         domain,
         expertise,
@@ -63,11 +65,12 @@ export async function PUT(
 // DELETE skill domain
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.skillDomain.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: 'Skill domain deleted successfully' });

@@ -9,9 +9,9 @@ export default function NewsletterSubscribe() {
       transition={{ duration: 0.6, delay: 0.5 }}
       className="bg-white rounded-lg shadow-sm p-4 border border-gray-200"
     >
-      <h3 className="text-lg font-semibold text-gray-900 mb-3 relative">
+      <h3 className="text-lg font-semibold text-gray-900 mb-3 relative pb-1">
         Stay Updated
-        <div className="absolute bottom-0 left-0 w-10 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded"></div>
+        <div className="absolute bottom-0 left-0 w-16 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full"></div>
       </h3>
       <p className="text-gray-600 mb-3 text-sm">
         Get the latest posts delivered straight to your inbox.

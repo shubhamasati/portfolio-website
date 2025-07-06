@@ -4,18 +4,23 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
+  // Get admin credentials from environment variables
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com'
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+  const adminName = process.env.ADMIN_NAME || 'Admin User'
+  
   // Create admin user
-  const hashedPassword = await bcrypt.hash('admin123', 12)
+  const hashedPassword = await bcrypt.hash(adminPassword, 12)
   
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { email: adminEmail },
     update: {
-      name: 'Shubham Asati',
+      name: adminName,
     },
     create: {
-      email: 'admin@example.com',
+      email: adminEmail,
       password: hashedPassword,
-      name: 'Shubham Asati',
+      name: adminName,
       role: 'admin',
     },
   })
@@ -26,43 +31,17 @@ async function main() {
     update: {},
     create: {
       userId: adminUser.id,
-      bio: "I'm a passionate full-stack developer with 5+ years of experience building modern web applications. I specialize in React, Next.js, Node.js, and cloud technologies. When I'm not coding, you'll find me exploring new technologies, contributing to open source, or sharing knowledge through my blog.",
-      title: "Senior Full-Stack Developer",
-      location: "San Francisco, CA",
-      website: "https://hankhughes.dev",
-      github: "https://github.com/hankhughes",
-      linkedin: "https://linkedin.com/in/hankhughes",
-      twitter: "https://twitter.com/hankhughes",
-      skills: "React, Next.js, TypeScript, Node.js, Python, AWS, Docker, PostgreSQL, MongoDB, GraphQL",
-      experience: JSON.stringify([
-        {
-          company: "TechCorp Inc.",
-          position: "Senior Full-Stack Developer",
-          duration: "2022 - Present",
-          description: "Leading development of enterprise web applications using React, Node.js, and AWS."
-        },
-        {
-          company: "StartupXYZ",
-          position: "Full-Stack Developer",
-          duration: "2020 - 2022",
-          description: "Built scalable web applications and mentored junior developers."
-        },
-        {
-          company: "Digital Agency",
-          position: "Frontend Developer",
-          duration: "2019 - 2020",
-          description: "Created responsive websites and e-commerce solutions for clients."
-        }
-      ]),
-      education: JSON.stringify([
-        {
-          degree: "Bachelor of Science in Computer Science",
-          school: "University of Technology",
-          year: "2019",
-          description: "Graduated with honors, specialized in software engineering."
-        }
-      ]),
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"
+      bio: process.env.PROFILE_BIO || "I'm a passionate full-stack developer with experience building modern web applications.",
+      title: process.env.PROFILE_TITLE || "Full-Stack Developer",
+      location: process.env.PROFILE_LOCATION || "Your Location",
+      website: process.env.PROFILE_WEBSITE || "",
+      github: process.env.PROFILE_GITHUB || "",
+      linkedin: process.env.PROFILE_LINKEDIN || "",
+      twitter: process.env.PROFILE_TWITTER || "",
+      skills: process.env.PROFILE_SKILLS || "React, Next.js, TypeScript, Node.js",
+      experience: process.env.PROFILE_EXPERIENCE || JSON.stringify([]),
+      education: process.env.PROFILE_EDUCATION || JSON.stringify([]),
+      avatar: process.env.PROFILE_AVATAR || ""
     },
   })
 

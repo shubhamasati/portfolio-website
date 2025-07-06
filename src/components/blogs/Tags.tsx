@@ -15,9 +15,9 @@ export default function Tags({ tags, selectedTag, onTagSelect }: TagsProps) {
       transition={{ duration: 0.6, delay: 0.4 }}
       className="bg-white rounded-lg shadow-sm p-4 border border-gray-200"
     >
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 relative">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 relative pb-1">
         Tags
-        <div className="absolute bottom-0 left-0 w-10 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded"></div>
+        <div className="absolute bottom-0 left-0 w-16 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full"></div>
       </h3>
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
