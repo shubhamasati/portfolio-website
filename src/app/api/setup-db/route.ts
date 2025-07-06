@@ -21,6 +21,23 @@ export async function POST() {
       throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required");
     }
 
+    // First, ensure database tables exist
+    console.log("📋 Ensuring database tables exist...");
+    const { execSync } = require('child_process');
+    
+    try {
+      execSync('npx prisma db push', { 
+        stdio: 'pipe', 
+        encoding: 'utf8',
+        env: process.env 
+      });
+      console.log("✅ Database tables created successfully!");
+    } catch (migrationError) {
+      console.error("❌ Database migration failed:", migrationError);
+      const errorMessage = migrationError instanceof Error ? migrationError.message : "Unknown migration error";
+      throw new Error(`Database migration failed: ${errorMessage}`);
+    }
+
     // Get admin credentials from environment variables
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPassword = process.env.ADMIN_PASSWORD;
